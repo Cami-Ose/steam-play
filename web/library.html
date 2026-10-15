@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Steam</title>
+<style>
+/* 库页面 —— 独立一页，不跟个人资料页挤左栏。
+   两个页签：我的库 / 愿望单。配色照 Steam 自己那套暗色：
+   底 #171a21 / 顶栏 #1b2838 / 字 #c6d4df / 次要 #8f98a0 / 蓝 #66c0f4 / 绿 #a4d007 */
+:root {
+  --bg: #171a21;
+  --bar: #1b2838;
+  --line: #2a3f5a;
+  --ink: #c6d4df;
+  --ink2: #8f98a0;
+  --blue: #66c0f4;
+  --green: #a4d007;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 14px/1.5 "Motiva Sans", Arial, "Microsoft YaHei", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
+a { color: var(--blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ---------- 顶栏 ---------- */
+#bar { position: sticky; top: 0; z-index: 20; background: var(--bar);
+  border-bottom: 1px solid var(--line); box-shadow: 0 2px 8px rgba(0,0,0,.35); }
+#bar .row { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
+.tabs { display: flex; gap: 3px; flex: none; }
+.tab { font-size: 14px; color: var(--ink2); padding: 4px 12px; border-radius: 3px;
+  cursor: pointer; white-space: nowrap; }
+.tab:hover { color: var(--ink); background: rgba(255,255,255,.07); }
+.tab.on { color: #fff; background: #316282; }
+#stat { font-size: 12px; color: var(--ink2); white-space: nowrap; }
+#q { flex: 1 1 120px; min-width: 90px; max-width: 260px; margin-left: auto;
+  background: #316282; border: 1px solid #000; border-radius: 3px; color: #fff;
+  padding: 6px 10px; font-size: 13px; font-family: inherit; outline: none; }
+#q::placeholder { color: #9db8cc; }
+#q:focus { background: #3d7ba1; }
+#sort { flex: none; background: #2a3f5a; border: 1px solid #000; border-radius: 3px;
+  color: var(--ink); padding: 6px 8px; font-size: 13px; font-family: inherit; cursor: pointer; }
+#pick { flex: none; background: linear-gradient(to bottom, #a4d007 5%, #536904 95%);
+  border: 0; border-radius: 3px; color: #d2e885; font-size: 13px; font-family: inherit;
+  padding: 7px 12px; cursor: pointer; white-space: nowrap; }
+#pick:hover { background: linear-gradient(to bottom, #b6e60a 5%, #5f7a05 95%); color: #fff; }
+#chips { display: flex; flex-wrap: wrap; gap: 6px; padding-bottom: 10px; }
+.chip { font-size: 12px; color: var(--ink2); background: rgba(0,0,0,.25);
+  border: 1px solid transparent; border-radius: 3px; padding: 3px 9px; cursor: pointer;
+  white-space: nowrap; }
+.chip:hover { color: var(--ink); background: rgba(255,255,255,.07); }
+.chip.on { color: #fff; background: #316282; border-color: #66c0f4; }
+
+/* ---------- 封面墙 ---------- */
+main { padding: 18px 0 40px; }
+#wall { display: grid; gap: 14px 12px;
+  grid-template-columns: repeat(auto-fill, minmax(184px, 1fr)); }
+.card { cursor: pointer; position: relative; }
+.card img { display: block; width: 100%; aspect-ratio: 184 / 69; object-fit: cover;
+  border-radius: 3px; background: #0e1621; }
+.card:hover img { outline: 1px solid var(--blue); }
+.card .n { margin-top: 5px; font-size: 13px; color: var(--ink);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.card .m { font-size: 11px; color: var(--ink2); overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap; }
+.card .m b { color: var(--blue); font-weight: normal; }
+.never { color: #beee11; }
+.low { color: var(--green); }
+/* 有官方更新的卡片：封面右上角一个小点 */
+.ndot { position: absolute; right: 6px; top: 6px; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--blue); box-shadow: 0 0 0 2px rgba(0,0,0,.55); }
+/* 详情里那几条更新：日期跟在标题后面，小一号、淡一点 */
+#modal dd .nd { color: var(--ink2); font-size: 11px; margin-left: 6px; }
+#none { color: var(--ink2); padding: 40px 0; text-align: center; }
+#count { color: var(--ink2); font-size: 12px; padding: 14px 0 0; }
+
+/* ---------- 详情弹层 ---------- */
+#modal { position: fixed; inset: 0; z-index: 40; background: rgba(0,0,0,.72);
+  display: flex; align-items: center; justify-content: center; padding: 20px; }
+#modal[hidden] { display: none; }
+#modal .box { width: min(560px, 100%); max-height: 90vh; overflow: auto;
+  background: var(--bar); border: 1px solid var(--line); border-radius: 4px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.6); }
+#modal img.big { display: block; width: 100%; aspect-ratio: 184 / 69; object-fit: cover;
+  background: #0e1621; border-radius: 4px 4px 0 0; }
+#modal .body { padding: 14px 18px 18px; }
+#modal h2 { margin: 0 0 4px; font-size: 19px; font-weight: 500; }
+#modal .lede { color: var(--ink2); font-size: 13px; margin-bottom: 12px; }
+#modal dl { display: grid; grid-template-columns: 5.5em 1fr; gap: 7px 12px; margin: 0; }
+#modal dt { color: var(--ink2); font-size: 12px; }
+#modal dd { margin: 0; font-size: 13px; }
+#modal .close { position: sticky; top: 0; float: right; margin: 8px 10px 0 0;
+  background: rgba(0,0,0,.55); border: 0; border-radius: 3px; color: var(--ink);
+  font-size: 18px; line-height: 1; padding: 4px 9px; cursor: pointer; }
+#modal .close:hover { color: #fff; background: #316282; }
+
+/* ---------- 页脚（和个人资料页同一条） ---------- */
+footer { background: var(--bg); border-top: 1px solid #24272c; padding: 16px 16px 40px; }
+.foot-in { max-width: 894px; margin: 0 auto; padding-top: 16px; color: #8f8e93;
+  font-size: 12px; line-height: 24px; }
+.foot-in hr { border: none; border-bottom: 1px solid #24272c; margin: 20px 0; }
+
+@media (max-width: 760px) {
+  #wall { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px 10px; }
+  #bar .row { flex-wrap: wrap; }
+  #q { margin-left: 0; max-width: none; order: 4; flex-basis: 100%; }
+  #modal dl { grid-template-columns: 4.5em 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header id="bar">
+  <div class="wrap">
+    <div class="row">
+      <div class="tabs">
+        <span class="tab on" data-mode="lib">我的库</span>
+        <span class="tab" data-mode="wish">愿望单</span>
+      </div>
+      <span id="stat"></span>
+      <input id="q" type="search" placeholder="搜游戏名…" autocomplete="off">
+      <select id="sort"></select>
+      <button id="pick" type="button" title="从「买了没打开过」里随机挑一个">帮我挑一个</button>
+    </div>
+    <div id="chips"></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="wall"></div>
+  <div id="none" hidden>没找到这样的游戏</div>
+  <div id="count"></div>
+</main>
+
+<footer>
+  <div class="foot-in">
+    <hr>
+    <div>数据来自 Steam 官方 Web API，只读，每天抓一次。</div>
+    <div>时长是 Steam 报的总时长；价格和史低来自 ITAD（国区人民币）。愿望单是「还没买的」，
+      不算进账号价值。</div>
+    <div>「账号价值」= 库里每个游戏当前原价之和，不等于你花的钱。</div>
+  </div>
+</footer>
+
+<div id="modal" hidden>
+  <div class="box">
+    <button class="close" type="button" aria-label="关掉">×</button>
+    <img class="big" alt="">
+    <div class="body">
+      <h2></h2>
+      <div class="lede"></div>
+      <dl></dl>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  function $(s, r) { return (r || document).querySelector(s); }
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
+  function hm(min) {
+    if (!min) return '0 小时';
+    var h = min / 60;
+    if (h < 1) return min + ' 分钟';
+    return (h >= 100 ? Math.round(h) : h.toFixed(1)) + ' 小时';
+  }
+
+  function yuan(fen) {
+    if (!fen) return '免费';
+    var y = fen / 100;
+    return '¥' + (y % 1 ? y.toFixed(2) : y.toFixed(0));
+  }
+
+  function day(ts) {
+    if (!ts) return '从没玩过';
+    var d = new Date(ts * 1000);
+    return (d.getMonth() + 1) + ' 月 ' + d.getDate() + ' 日';
+  }
+
+  /* 小图标是 Steam 给的一串 hash，不是完整地址，得自己拼 */
+  function icon(g) {
+    return 'https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/apps/' +
+      g.appid + '/' + g.icon + '.jpg';
+  }
+
+  /* 横版封面：商店接口给的那个（新游戏只有新路径上有图），没有才退回旧路径 */
+  function cover(g) {
+    var c = (g.price && g.price.cover) || g.cover || '';
+    return c || ('https://cdn.cloudflare.steamstatic.com/steam/apps/' +
+      g.appid + '/capsule_184x69.jpg');
+  }
+
+  var lib = [], wish = [], news = {}, genre = '', q = '', mode = 'lib', sort = 'minutes';
+
+  var SORTS = {
+    lib: [['minutes', '游玩时长'], ['last', '最近玩过'], ['name', '名字'],
+      ['price', '原价'], ['hour', '每小时成本']],
+    wish: [['near', '离史低最近'], ['cut', '折扣最大'], ['added', '刚加进来的'],
+      ['price', '原价'], ['name', '名字']],
+  };
+
+  function pool() { return mode === 'wish' ? wish : lib; }
+
+  /* ---------- 筛 + 排 ---------- */
+  function shown() {
+    var kw = q.trim().toLowerCase();
+    var out = pool().filter(function (g) {
+      if (kw) {
+        var hay = ((g.name || '') + ' ' + ((g.price && g.price.name) || '') + ' ' +
+          (((g.price && g.price.genres) || g.genres) || []).join(' ')).toLowerCase();
+        if (hay.indexOf(kw) < 0) return false;
+      }
+      if (genre && (((g.price && g.price.genres) || g.genres) || []).indexOf(genre) < 0) return false;
+      return true;
+    });
+    var p = function (g) { return g.price || g; };
+    out.sort(function (a, b) {
+      if (sort === 'minutes') return b.minutes - a.minutes;
+      if (sort === 'last') return (b.last || 0) - (a.last || 0);
+      if (sort === 'name') return (a.name || '').localeCompare(b.name || '', 'zh');
+      if (sort === 'price') return (p(b).initial || 0) - (p(a).initial || 0);
+      if (sort === 'added') return (b.added || 0) - (a.added || 0);
+      if (sort === 'cut') return (p(b).discount || 0) - (p(a).discount || 0);
+      if (sort === 'near') {
+        /* 离史低多近：现价 / 史低，越小越接近。没史低 / 没定价的沉底 */
+        var ra = p(a).low && p(a).final ? p(a).final / p(a).low : Infinity;
+        var rb = p(b).low && p(b).final ? p(b).final / p(b).low : Infinity;
+        return ra - rb;
+      }
+      if (sort === 'hour') {
+        var ha = a.minutes > 0 && p(a).initial ? p(a).initial / (a.minutes / 60) : Infinity;
+        var hb = b.minutes > 0 && p(b).initial ? p(b).initial / (b.minutes / 60) : Infinity;
+        return ha - hb;
+      }
+      return 0;
+    });
+    return out;
+  }
+
+  /* 愿望单那张卡：主角是「现在多少钱、离史低多远」。
+     正好史低时只写一次「史低！」，别再跟一句「史低 ¥xx」 */
+  function wishMeta(g) {
+    if (!g.initial && !g.final) return '<span class="never">还没定价</span>';
+    var atLow = !!(g.low && g.final && g.final <= g.low);
+    var s = (atLow ? '<span class="low">史低！</span> ' : '') + '<b>' + yuan(g.final) + '</b>';
+    if (g.discount) s += ' <span class="low">-' + g.discount + '%</span>';
+    if (g.low && !atLow) s += ' · 史低 ' + yuan(g.low);
+    return s;
+  }
+
+  function card(g) {
+    var m;
+    if (mode === 'wish') {
+      m = wishMeta(g);
+    } else if (g.minutes > 0) {
+      m = hm(g.minutes) + ' · 最近 ' + day(g.last);
+    } else {
+      m = '<span class="never">从没打开过</span>' +
+        ((g.price && g.price.initial) ? ' · 原价 ' + yuan(g.price.initial) : '');
+    }
+    return '<div class="card" data-appid="' + g.appid + '" title="' + esc(g.name) + '">' +
+      (news[g.appid] ? '<i class="ndot" title="最近有官方更新"></i>' : '') +
+      '<img src="' + esc(cover(g)) + '" loading="lazy" alt="" ' +
+      'onerror="this.style.visibility=\'hidden\'">' +
+      '<div class="n">' + esc(g.name) + '</div>' +
+      '<div class="m">' + m + '</div></div>';
+  }
+
+  function draw() {
+    var list = shown();
+    $('#wall').innerHTML = list.map(card).join('');
+    $('#none').hidden = list.length > 0;
+    $('#none').textContent = mode === 'wish' ? '愿望单里没有这样的' : '没找到这样的游戏';
+    var all = pool().length;
+    $('#count').textContent = list.length === all
+      ? '' : ('筛出 ' + list.length + ' 个 / 共 ' + all + ' 个');
+  }
+
+  /* ---------- 顶栏：统计 / 排序 / 分类 ---------- */
+  function drawBar() {
+    if (mode === 'wish') {
+      var cut = wish.filter(function (g) { return (g.discount || 0) > 0; }).length;
+      var atLow = wish.filter(function (g) { return g.low && g.final && g.final <= g.low; }).length;
+      var sum = wish.reduce(function (s, g) { return s + (g.final || 0); }, 0);
+      $('#stat').textContent = wish.length + ' 个想买 · ' + cut + ' 个在打折 · ' +
+        atLow + ' 个正好史低 · 全买要 ' + yuan(sum);
+    } else {
+      var minutes = lib.reduce(function (s, g) { return s + g.minutes; }, 0);
+      var played = lib.filter(function (g) { return g.minutes > 0; }).length;
+      $('#stat').textContent = lib.length + ' 个 · ' + Math.round(minutes / 60) + ' 小时 · ' +
+        played + ' 个玩过 / ' + (lib.length - played) + ' 个没碰';
+    }
+
+    $('#sort').innerHTML = SORTS[mode].map(function (o) {
+      return '<option value="' + o[0] + '">' + esc(o[1]) + '</option>';
+    }).join('');
+    if (!SORTS[mode].some(function (o) { return o[0] === sort; })) sort = SORTS[mode][0][0];
+    $('#sort').value = sort;
+
+    var n = {};
+    pool().forEach(function (g) {
+      (((g.price && g.price.genres) || g.genres) || []).forEach(function (x) { n[x] = (n[x] || 0) + 1; });
+    });
+    var gs = Object.keys(n).sort(function (a, b) { return n[b] - n[a]; });
+    if (genre && gs.indexOf(genre) < 0) genre = '';
+    $('#chips').innerHTML = ['全部'].concat(gs).map(function (x) {
+      var on = (x === '全部' && !genre) || x === genre;
+      return '<span class="chip' + (on ? ' on' : '') + '" data-g="' +
+        (x === '全部' ? '' : esc(x)) + '">' + esc(x) +
+        (x === '全部' ? '' : ' ' + n[x]) + '</span>';
+    }).join('');
+  }
+
+  /* ---------- 详情 ---------- */
+  function rowsFor(g) {
+    var p = g.price || g;
+    var rows = [];
+    if (mode === 'wish') {
+      rows.push(['现价', (p.final ? yuan(p.final) : '还没定价') +
+        (p.discount ? '（-' + p.discount + '%，原价 ' + yuan(p.initial) + '）' : '')]);
+      if (p.low) {
+        rows.push(['史低', yuan(p.low) + (p.lowAt ? '（' + p.lowAt + ' · ' + (p.lowShop || '') + '）' : '')]);
+        if (p.final && p.low) {
+          var gap = p.final - p.low;
+          rows.push([gap <= 0 ? '现在就是史低' : '离史低还差',
+            gap <= 0 ? '别等了' : yuan(gap) + '（贵 ' + Math.round(gap / p.low * 100) + '%）']);
+        }
+      } else {
+        rows.push(['史低', '没记录']);
+      }
+      if (g.added) {
+        rows.push(['加入愿望单', new Date(g.added * 1000).toLocaleDateString('zh-CN')]);
+      }
+      if (p.genres && p.genres.length) rows.push(['分类', p.genres.join(' · ')]);
+      if (p.url) rows.push(['商店', '<a href="' + esc(p.url) + '" target="_blank" rel="noopener">看价格走势</a>']);
+      return rows;
+    }
+
+    rows.push(['总时长', g.minutes > 0 ? hm(g.minutes) : '从没打开过']);
+    if (g.minutes > 0) {
+      rows.push(['最近玩', day(g.last)]);
+      if (g.minutes2w > 0) rows.push(['过去两周', hm(g.minutes2w)]);
+      if (p.initial) rows.push(['每小时成本', '¥' + (p.initial / 100 / (g.minutes / 60)).toFixed(2)]);
+    } else if (p.initial) {
+      rows.push(['白买', yuan(p.initial)]);
+    }
+    if (p.isFree) {
+      rows.push(['价格', '免费']);
+    } else if (p.initial) {
+      rows.push(['现价', p.final === p.initial ? yuan(p.final)
+        : yuan(p.final) + '（原价 ' + yuan(p.initial) + '，-' + p.discount + '%）']);
+    }
+    if (p.low) {
+      rows.push(['史低', yuan(p.low) + (p.lowAt ? '（' + p.lowAt + ' · ' + (p.lowShop || '') + '）' : '')]);
+      if (p.lowM3 && p.lowM3 !== p.low) rows.push(['近三月低', yuan(p.lowM3)]);
+    }
+    if (p.genres && p.genres.length) rows.push(['分类', p.genres.join(' · ')]);
+    if (p.at) rows.push(['价格抓于', p.at]);
+    if (p.url) rows.push(['商店', '<a href="' + esc(p.url) + '" target="_blank" rel="noopener">看价格走势</a>']);
+    return rows;
+  }
+
+  function openDetail(g, lede) {
+    var box = $('#modal');
+    $('.big', box).src = cover(g);
+    $('h2', box).textContent = g.name;
+    $('.lede', box).textContent = lede || '';
+    var rows = rowsFor(g);
+    // 官方更新：只装厂商自己发的（Steam 把外站转载混在同一个 feed 里，服务端已经滤过了）
+    var f = news[g.appid];
+    if (f && (f.items || []).length) {
+      rows.push(['最近更新', f.items.map(function (it) {
+        return '<a href="' + esc(it.url) + '" target="_blank" rel="noopener">' + esc(it.title) + '</a>' +
+          '<span class="nd">' + day(it.date) + '</span>';
+      }).join('<br>')]);
+    }
+    $('dl', box).innerHTML = rows.map(function (r) {
+      return '<dt>' + esc(r[0]) + '</dt><dd>' + r[1] + '</dd>';
+    }).join('');
+    box.hidden = false;
+  }
+
+  /* ---------- 起 ---------- */
+  fetch('/api/steam/history', { credentials: 'same-origin' })
+    .then(function (r) {
+      // 没登录时接口回 401 + 一段 JSON，光看 .json() 会把它当成功，于是统计显示「0 个」
+      if (!r.ok) throw new Error('接口回了 HTTP ' + r.status + '（登录过期了？）');
+      return r.json();
+    })
+    .then(function (d) {
+      lib = (d.games || []).slice();
+      wish = ((d.wishlist || {}).items || []).slice();
+      news = d.news || {};
+      $('.tab[data-mode="wish"]').textContent = '愿望单' + (wish.length ? ' ' + wish.length : '');
+      drawBar();
+      draw();
+    })
+    .catch(function (e) {
+      $('#none').hidden = false;
+      $('#none').textContent = '数据没拉到：' + e;
+    });
+
+  $('.tabs').addEventListener('click', function (e) {
+    var t = e.target.closest('.tab');
+    if (!t || t.classList.contains('on')) return;
+    mode = t.getAttribute('data-mode');
+    genre = '';
+    [].forEach.call(this.children, function (x) { x.classList.toggle('on', x === t); });
+    drawBar();
+    draw();
+  });
+  $('#q').addEventListener('input', function () { q = this.value; draw(); });
+  $('#sort').addEventListener('change', function () { sort = this.value; draw(); });
+  $('#chips').addEventListener('click', function (e) {
+    var c = e.target.closest('.chip');
+    if (!c) return;
+    genre = c.getAttribute('data-g') || '';
+    [].forEach.call(this.children, function (x) { x.classList.toggle('on', x === c); });
+    draw();
+  });
+  $('#wall').addEventListener('click', function (e) {
+    var c = e.target.closest('.card');
+    if (!c) return;
+    var g = pool().filter(function (x) { return x.appid === +c.getAttribute('data-appid'); })[0];
+    if (g) openDetail(g);
+  });
+
+  /* 帮我挑一个：优先从「买了没打开过」里挑，全玩过了就从玩得最少的里挑 */
+  $('#pick').addEventListener('click', function () {
+    var never = lib.filter(function (g) { return g.minutes === 0; });
+    var from, lede;
+    if (never.length) {
+      from = never;
+      lede = '买了没打开过的还有 ' + never.length + ' 个，这个是随手挑的。';
+    } else {
+      from = lib.filter(function (g) { return g.minutes > 0; })
+        .sort(function (a, b) { return a.minutes - b.minutes; }).slice(0, 20);
+      lede = '库里都打开过了 —— 这是玩得最少的几个里挑的。';
+    }
+    if (!from.length) return;
+    openDetail(from[Math.floor(Math.random() * from.length)], lede);
+  });
+
+  $('#modal').addEventListener('click', function (e) {
+    if (e.target === this || e.target.closest('.close')) this.hidden = true;
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') $('#modal').hidden = true;
+  });
+})();
+</script>
+</body>
+</html>

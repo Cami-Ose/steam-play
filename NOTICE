@@ -1,0 +1,82 @@
+# NOTICE — 第三方组件与商标
+
+本仓库并非全部内容都由本项目作者创作。以下部分**不属于** MIT 许可证
+（见 LICENSE）的授权范围，其权利归各自所有者。
+
+---
+
+## 1. web/assets/ —— Steam 的样式表
+
+`web/assets/` 下的 15 个 CSS 文件是从 Steam 社区页面提取的原始样式表：
+
+```
+buttons.css              main.css                 profilev2.css
+chunk~642602239.css      modalContent.css         shared_global.css
+chunk~8f4f68fd6.css      motiva_sans.css          shared_responsive.css
+footer.css               profile.css              stickers.css
+globalv2.css             header.css               greenenvelope.css
+```
+
+**版权归 Valve Corporation 所有。** 本项目作者对这些文件不主张任何权利，
+MIT 许可证不适用于它们。把它们放进本仓库，是为了让 `web/index.html` 能
+原样复现 Steam 社区页面的外观；它们是 Steam 客户端与网站正常运行所必需的
+组成部分，在此仅作**个人、非商业性的自用与学习**用途。
+
+这些文件**不随本项目的 MIT 许可证一同授权**。如果你要把本项目用于商业用途、
+或公开发布、分发包含这些文件的作品，**请自行取得 Valve 的许可**，或
+参照 `README.md` 第 3 步，改为从你自己 Steam 社区页面的「另存为」结果中
+提取对应样式表 —— 那样你使用的是你自己取得的那一份。
+
+## 2. web/index.html —— 页面结构源自 Steam 社区页
+
+`web/index.html` 由 `web/clean.mjs` 从一份 Steam 社区个人资料页的
+「另存为」结果生成。其中的 HTML 结构、类名与布局来自 Valve 的页面。
+
+本项目作者编写的部分仅为：清理脚本本身、注入的 `<style>` 块、以及
+注入的 `page.js`（经 `clean.mjs` 挂载）。**页面的骨架结构归 Valve 所有**，
+同样不在 MIT 授权范围内。
+
+仓库中的 `web/index.html` 已由 `clean.mjs` 清除了原始存档页携带的全部
+个人身份信息与登录凭据（详见 README「做页面」一节）。
+
+## 3. 字体：Motiva Sans —— 未随仓库分发
+
+`web/assets/motiva_sans.css` 中的 `@font-face` 规则**远程引用** Steam CDN 上的
+字体文件（`community.fastly.steamstatic.com/public/shared/fonts/MotivaSans-*.ttf`），
+**本仓库不包含任何字体二进制文件**。
+
+Motiva Sans 的版权与许可归其各自所有者：
+
+```
+Font:       Motiva Sans
+Foundry:    Niramekko
+Copyright:  Copyright 2011 by Rodrigo Saiani. All rights reserved.
+License:    http://www.youworkforthem.com/font-license
+            The WebFont(s) listed in this document must follow the
+            YouWorkForThem WebFont license rules. All other parties are
+            strictly restricted from using the WebFonts(s) listed without
+            a purchased license.
+            All details above must always remain unaltered and visible
+            in your CSS.
+```
+
+（原文逐字引自 `web/assets/motiva_sans.css` 的开头注释，该注释保持原样未改。）
+
+按该许可的条款，**未购买授权者不得使用 Motiva Sans 字体**。上面的 CSS
+只是指向 Steam 自己的 CDN 地址，浏览器加载时请求的是 Steam 的服务器；
+本项目既不托管、也不再分发这些字体。如果你要长期部署或用于公开站点，
+建议自行替换为可自由使用的字体（例如系统字体或开源中文字体），
+把 `motiva_sans.css` 从页面引用中去掉。
+
+## 4. 商标
+
+Steam 及相关标识是 Valve Corporation 的商标。本项目与 Valve 无关联，
+未获其赞助或认可。
+
+---
+
+## 一句话总结
+
+MIT 覆盖的是**代码**（`update.py`、`web/*.py`、`web/*.mjs`、`web/page.js`、
+`web/library.html`）；`web/assets/` 的样式表、`web/index.html` 的页面骨架、
+以及 Motiva Sans 字体**都不在** MIT 授权范围内，各自归 Valve 或字体权利人所有。

@@ -1,0 +1,50 @@
+MIT License
+
+Copyright (c) 2026 Cami-Ose
+
+────────────────────────────────────────────────────────────────────────
+适用范围 / Scope
+────────────────────────────────────────────────────────────────────────
+
+本许可证**只覆盖本仓库中由本项目作者编写的代码**，即：
+
+    update.py
+    web/server.py
+    web/clean.mjs
+    web/check-clean.mjs
+    web/page.js
+    web/library.html
+    README.md
+    LICENSE
+    NOTICE
+
+`web/index.html` 是**混合**的：由本项目作者编写的部分（`clean.mjs` 注入的
+`<style>` 块，以及内联在文件末尾的 `page.js` 全部内容）受本许可证覆盖；
+其余页面骨架（HTML 结构、类名、布局）是 Valve Corporation 的作品，不受覆盖。
+
+**不覆盖** web/assets/ 目录下的样式表，也不覆盖 `web/index.html` 中的
+页面骨架 —— 那些是 Valve Corporation 的作品，不属于本项目作者，
+本许可证无权对它们授权或再许可。详见 NOTICE。
+
+使用、分发或修改本仓库时，请一并阅读 NOTICE；对第三方组件的使用受
+NOTICE 中所述各自的条款约束，而非本许可证。
+
+────────────────────────────────────────────────────────────────────────
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

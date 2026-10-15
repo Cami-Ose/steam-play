@@ -1,0 +1,20 @@
+# 抓下来的数据 —— 各人自己的库，不进仓库
+latest.json
+daily.json
+changes.json
+prices.json
+wishlist.json
+news.json
+historylow.json
+snapshots/
+update.log
+
+# 页面底（自己 Steam 页的「另存为」）—— 带个人信息，按 README 现做
+原始页面.html
+*_files/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
